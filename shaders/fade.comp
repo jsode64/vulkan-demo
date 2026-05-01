@@ -1,0 +1,19 @@
+#version 450
+
+layout(local_size_x = 16, local_size_y = 16) in;
+
+layout(set = 0, binding = 2, rgba8) uniform image2D image;
+
+void main() {
+    ivec2 coords = ivec2(gl_GlobalInvocationID.xy);
+
+    const ivec2 imgSize = imageSize(image);
+    if (coords.x >= imgSize.x || coords.y >= imgSize.y) {
+        return;
+    }
+    
+    vec4 pixel = imageLoad(image, coords);
+    pixel.rgb *= 0.97;
+    
+    imageStore(image, coords, pixel);
+}

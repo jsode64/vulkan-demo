@@ -1,0 +1,63 @@
+#version 450
+
+layout(local_size_x = 16) in;
+
+layout(push_constant) uniform Params {
+    uint nVertices;
+} params;
+
+struct Vertex {
+    vec4 c;
+    vec2 p;
+    vec2 v;
+    float m;
+};
+
+layout(std430, binding = 0) buffer VertexBufferIn {
+    Vertex verticesIn[];
+};
+
+layout(std430, binding = 1) buffer VertexBufferOut {
+    Vertex verticesOut[];
+};
+
+// The bound. X and Y values are limited to [-bound, bound].
+const float BOUND = 1000.0;
+
+// Gravitational strength.
+const float G = 0.05;
+
+// Offset to prevent close-range explosions.
+const float DAMP = 0.5;
+
+void main() {
+    uint iMe = gl_GlobalInvocationID.x;
+    if (iMe >= params.nVertices) {
+        return;
+    }
+
+    Vertex me = verticesIn[iMe];
+
+    for (uint i = 0; i < params.nVertices; i++) {
+        // Skip self.
+        if (i == iMe) {
+            continue;
+        }
+
+        // Gravity pull.
+        const vec2 diff = verticesIn[i].p - me.p;
+        const float distSqr = max(dot(diff, diff), DAMP);
+        const vec2 pull = normalize(diff) * verticesIn[i].m / distSqr;
+        me.v += pull * G;
+    }
+
+    // Move and clamp to the screen.
+    me.v *= 0.98;
+    me.p += me.v;
+
+    if (me.v != me.v) {
+        me.v = vec2(0.0);
+    }
+
+    verticesOut[iMe] = me;
+}

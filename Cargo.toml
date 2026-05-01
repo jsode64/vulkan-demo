@@ -1,0 +1,10 @@
+[package]
+name = "ibis"
+version = "0.1.0"
+edition = "2024"
+
+[dependencies]
+ash = "0.38.0"
+glfw = "0.62.0"
+thiserror = "2.0.18"
+rand = "0.10.1"
