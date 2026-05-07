@@ -16,11 +16,11 @@ struct Vertex {
     _pad: [f32; 3],
 }
 
-const N_VERTICES: usize = 5000;
+const N_VERTICES: usize = 5_000;
 
 fn main() -> Result {
     let mut window = Window::builder()
-        .size(1600, 1600)
+        .size(800, 800)
         .title("Gravity Simulation")
         .build()?;
     let context = Context::builder()
