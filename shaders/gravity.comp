@@ -3,6 +3,7 @@
 layout(local_size_x = 16) in;
 
 layout(push_constant) uniform Params {
+    vec2 mPos;
     uint nVertices;
 } params;
 
@@ -50,6 +51,12 @@ void main() {
         const vec2 pull = normalize(diff) * verticesIn[i].m / distSqr;
         me.v += pull * G;
     }
+
+    // Mouse gravity pull.
+    const vec2 diff = (params.mPos * BOUND) - me.p;
+    const float distSqr = max(dot(diff, diff), 10.0);
+    const vec2 pull = normalize(diff) * 10000.0 / distSqr;
+    me.v -= pull * G;
 
     // Move and clamp to the screen.
     me.v *= 0.98;

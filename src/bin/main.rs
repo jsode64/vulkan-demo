@@ -16,11 +16,17 @@ struct Vertex {
     _pad: [f32; 3],
 }
 
-const N_VERTICES: usize = 5_000;
+#[repr(C)]
+struct PushContant {
+    m_pos: Vec2<f32>,
+    n_vertices: u32,
+}
+
+const N_VERTICES: usize = 5000;
 
 fn main() -> Result {
     let mut window = Window::builder()
-        .size(800, 800)
+        .size(1600, 1600)
         .title("Gravity Simulation")
         .build()?;
     let context = Context::builder()
@@ -72,7 +78,7 @@ fn main() -> Result {
         .push_constant_ranges(&[vk::PushConstantRange::default()
             .stage_flags(vk::ShaderStageFlags::COMPUTE)
             .offset(0)
-            .size(4)])
+            .size((size_of::<u32>() + size_of::<Vec2<f32>>()) as u32)])
         .build(&context)?;
     let gravity_compute = ComputePipeline::new(&context, &pipeline_layout, "shaders/gravity.spv")?;
     let fade_compute = ComputePipeline::new(&context, &pipeline_layout, "shaders/fade.spv")?;
@@ -209,11 +215,18 @@ fn main() -> Result {
             0,
             &[compute_set.set()],
         );
+
+        let m_pos =
+            window.mouse_pos() * 2.0 / Vec2::new(window.width() as f32, window.height() as f32);
+        let push_contants = PushContant {
+            m_pos,
+            n_vertices: N_VERTICES as u32,
+        };
         scene.push_constants(
             &pipeline_layout,
             vk::ShaderStageFlags::COMPUTE,
             0,
-            &(N_VERTICES as u32),
+            &push_contants,
         );
 
         // Fade the image.
